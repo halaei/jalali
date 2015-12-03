@@ -1,0 +1,27 @@
+{
+  "name": "opilo/jalali",
+  "description": "Jalali date validator for Laravel based on opilo/farsi",
+  "keywords": ["Jalali", "Shamsi", "Laravel", "Persian"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Hamid Alaei V.",
+      "email": "hamid@opilo.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4",
+    "illuminate/validation": "*",
+    "opilo/farsi": "^0.1.2"
+  },
+  "require-dev": {
+    "illuminate/translation": "*",
+    "phpunit/phpunit": "4.*",
+    "mockery/mockery": "~0.9"
+  },
+  "autoload": {
+    "psr-4": {
+      "Opilo\\Farsi\\Laravel\\": "src/"
+    }
+  }
+}

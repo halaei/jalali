@@ -59,6 +59,8 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
 
     public function test_validation_rules_fail()
     {
+        JalaliValidator::setSampleDate(new \Opilo\Farsi\JalaliDate(1395, 1, 1));
+
         $validator = $this->factory->make(
             [
                 'birth_date' => '1394/9/32',
@@ -76,11 +78,12 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
         $this->translator->shouldReceive('trans')->once()->with('validation.attributes.birth_date')
             ->andReturn('validation.attributes.birth_date');
 
+
         $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali')
             ->andReturn('validation.custom.graduation_date.jalali');
 
         $this->translator->shouldReceive('trans')->once()->with('validation.jalali')
-            ->andReturn(':attribute should be a valid jalali according to :format');
+            ->andReturn(':attribute should be a valid jalali according to :format (e.g. :sample or :fa-sample)');
 
         $this->translator->shouldReceive('trans')->once()->with('validation.attributes.graduation_date')
             ->andReturn('the graduation date');
@@ -92,8 +95,44 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
                 'birth_date must be jalali of format Y/m/d',
             ],
             'graduation_date' => [
-                'the graduation date should be a valid jalali according to Y-m-d',
+                'the graduation date should be a valid jalali according to Y-m-d (e.g. 1395-1-1 or ۱۳۹۵-۱-۱)',
             ]
         ], $validator->messages()->toArray());
+
+        JalaliValidator::setSampleDate();
+    }
+
+    public function test_sample_dates()
+    {
+        JalaliValidator::setSampleDate(new \Opilo\Farsi\JalaliDate(1395, 2, 13));
+
+        $validator = $this->factory->make(
+            [
+                'graduation_date' => 'garbage',
+            ],
+            [
+                'graduation_date' => 'required|jalali:Y-y-d-j-S-z-m-M-n',
+            ]
+        );
+
+        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali')
+            ->andReturn('validation.custom.graduation_date.jalali');
+
+        $this->translator->shouldReceive('trans')->once()->with('validation.jalali')
+            ->andReturn(':sample :fa-sample');
+
+        $this->translator->shouldReceive('trans')->once()->with('validation.attributes.graduation_date')
+            ->andReturn('validation.attributes.graduation_date');
+
+        $this->assertTrue($validator->fails());
+
+        $this->assertEquals([
+            'graduation_date' => [
+                '1395-95-13-13-S-44-2-اردیبهشت-2 ۱۳۹۵-۹۵-۱۳-۱۳-S-۴۴-۲-اردیبهشت-۲',
+            ]
+        ], $validator->messages()->toArray());
+
+        JalaliValidator::setSampleDate();
+
     }
 }

@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "php": ">=5.4",
+    "php": ">=5.5",
     "illuminate/validation": "^4.2||^5",
     "opilo/farsi": "^0.1.2"
   },

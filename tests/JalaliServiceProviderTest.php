@@ -3,7 +3,7 @@
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
 use Mockery\MockInterface;
-use Opilo\Farsi\Laravel\JalaliValidator;
+use Halaei\Jalali\Laravel\JalaliValidator;
 
 class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
 {

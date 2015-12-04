@@ -1,7 +1,7 @@
 {
-  "name": "opilo/jalali",
+  "name": "halaei/jalali",
   "description": "Jalali date validator for Laravel based on opilo/farsi",
-  "keywords": ["Jalali", "Shamsi", "Laravel", "Persian"],
+  "keywords": ["Jalali", "Shamsi", "Laravel", "Persian Calendar", "Iranian Calendar"],
   "license": "MIT",
   "authors": [
     {
@@ -21,7 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Opilo\\Farsi\\Laravel\\": "src/"
+      "Halaei\\Jalali\\Laravel\\": "src/"
     }
   }
 }

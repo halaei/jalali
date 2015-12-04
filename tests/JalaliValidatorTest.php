@@ -1,6 +1,6 @@
 <?php
 
-use Opilo\Farsi\Laravel\JalaliValidator;
+use Halaei\Jalali\Laravel\JalaliValidator;
 
 class JalaliValidatorTest extends PHPUnit_Framework_TestCase
 {

@@ -11,11 +11,11 @@
   ],
   "require": {
     "php": ">=5.4",
-    "illuminate/validation": "*",
+    "illuminate/validation": "^4.2||^5",
     "opilo/farsi": "^0.1.2"
   },
   "require-dev": {
-    "illuminate/translation": "*",
+    "illuminate/translation": "^4.2||^5",
     "phpunit/phpunit": "4.*",
     "mockery/mockery": "~0.9"
   },

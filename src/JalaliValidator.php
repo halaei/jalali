@@ -50,6 +50,37 @@ class JalaliValidator
         return true;
     }
 
+    public function compare($attribute, $value, $parameters)
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        $format = count($parameters) > 1 ? $parameters[1] : 'Y/m/d';
+
+        $baseDate = count($parameters) ?
+            JalaliDate::fromFormat($format, $parameters[0]) :
+            JalaliDate::fromDateTime(new DateTime());
+
+        try {
+            return JalaliDate::fromFormat($format, $value)->toInteger() - $baseDate->toInteger();
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    public function validateAfter($attribute, $value, $parameters)
+    {
+        $diff = $this->compare($attribute, $value, $parameters);
+        return $diff !== false && $diff > 0;
+    }
+
+    public function validateBefore($attribute, $value, $parameters)
+    {
+        $diff = $this->compare($attribute, $value, $parameters);
+        return $diff !== false && $diff < 0;
+    }
+
     protected function getSample($format)
     {
         $date = static::getSampleDate();
@@ -92,5 +123,16 @@ class JalaliValidator
         $faSample = StringCleaner::digitsToFarsi($sample);
 
         return str_replace([':format', ':sample', ':fa-sample'], [$format, $sample, $faSample], $message);
+    }
+
+    public function replaceAfterOrBefore($message, $attribute, $rule, $parameters)
+    {
+        $format = count($parameters) > 1 ? $parameters[1] : 'Y/m/d';
+
+        $date = count($parameters) ? $parameters[0] : JalaliDate::fromDateTime(new DateTime())->format($format, false);
+
+        $faDate = StringCleaner::digitsToFarsi($date);
+
+        return str_replace([':date', ':fa-date'], [$date, $faDate], $message);
     }
 }

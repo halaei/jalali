@@ -9,7 +9,7 @@ use Opilo\Farsi\StringCleaner;
 class JalaliValidator
 {
     protected static $monthNames = [
-        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',
     ];
 
     /**
@@ -72,12 +72,14 @@ class JalaliValidator
     public function validateAfter($attribute, $value, $parameters)
     {
         $diff = $this->compare($attribute, $value, $parameters);
+
         return $diff !== false && $diff > 0;
     }
 
     public function validateBefore($attribute, $value, $parameters)
     {
         $diff = $this->compare($attribute, $value, $parameters);
+
         return $diff !== false && $diff < 0;
     }
 

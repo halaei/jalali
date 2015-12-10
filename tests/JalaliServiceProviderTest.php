@@ -27,27 +27,27 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
 
         $validator = new JalaliValidator();
 
-        $this->factory->extend('jalali', function($attribute, $value, $parameter) use ($validator) {
+        $this->factory->extend('jalali', function ($attribute, $value, $parameter) use ($validator) {
             return  $validator->validateJalali($attribute, $value, $parameter);
         });
 
-        $this->factory->extend('jalali_after', function($attribute, $value, $parameter) use ($validator) {
+        $this->factory->extend('jalali_after', function ($attribute, $value, $parameter) use ($validator) {
             return $validator->validateAfter($attribute, $value, $parameter);
         });
 
-        $this->factory->extend('jalali_before', function($attribute, $value, $parameter) use ($validator) {
+        $this->factory->extend('jalali_before', function ($attribute, $value, $parameter) use ($validator) {
             return $validator->validateBefore($attribute, $value, $parameter);
         });
 
-        $this->factory->replacer('jalali', function($message, $attribute, $rule, $parameter) use ($validator) {
+        $this->factory->replacer('jalali', function ($message, $attribute, $rule, $parameter) use ($validator) {
             return $validator->replaceJalali($message, $attribute, $rule, $parameter);
         });
 
-        $this->factory->replacer('jalali_after', function($message, $attribute, $rule, $parameter) use ($validator) {
+        $this->factory->replacer('jalali_after', function ($message, $attribute, $rule, $parameter) use ($validator) {
             return $validator->replaceAfterOrBefore($message, $attribute, $rule, $parameter);
         });
 
-        $this->factory->replacer('jalali_before', function($message, $attribute, $rule, $parameter) use ($validator) {
+        $this->factory->replacer('jalali_before', function ($message, $attribute, $rule, $parameter) use ($validator) {
             return $validator->replaceAfterOrBefore($message, $attribute, $rule, $parameter);
         });
     }
@@ -81,11 +81,11 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
 
         $validator = $this->factory->make(
             [
-                'birth_date' => '1394/9/32',
-                'graduation_date' => '1394-9-32'
+                'birth_date'      => '1394/9/32',
+                'graduation_date' => '1394-9-32',
             ],
             [
-                'birth_date' => 'required|jalali',
+                'birth_date'      => 'required|jalali',
                 'graduation_date' => 'required|jalali:Y-m-d',
             ]
         );
@@ -95,7 +95,6 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
 
         $this->translator->shouldReceive('trans')->once()->with('validation.attributes.birth_date')
             ->andReturn('validation.attributes.birth_date');
-
 
         $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali')
             ->andReturn('validation.custom.graduation_date.jalali');
@@ -114,7 +113,7 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             ],
             'graduation_date' => [
                 'the graduation date should be a valid jalali according to Y-m-d (e.g. 1395-1-1 or ۱۳۹۵-۱-۱)',
-            ]
+            ],
         ], $validator->messages()->toArray());
 
         JalaliValidator::setSampleDate();
@@ -147,7 +146,7 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([
             'graduation_date' => [
                 '1395-95-13-13-S-44-2-اردیبهشت-2Y ۱۳۹۵-۹۵-۱۳-۱۳-S-۴۴-۲-اردیبهشت-۲Y',
-            ]
+            ],
         ], $validator->messages()->toArray());
 
         JalaliValidator::setSampleDate();
@@ -185,7 +184,7 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             'graduation_date' => [
                 "The graduation date must be a Jalali date after $now ($faNow).",
                 "The graduation date must be a Jalali date before $now ($faNow).",
-            ]
+            ],
         ], $validator->messages()->toArray());
     }
 
@@ -221,7 +220,7 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             'graduation_date' => [
                 "The graduation date must be a Jalali date after $now ($faNow).",
                 "The graduation date must be a Jalali date before $now ($faNow).",
-            ]
+            ],
         ], $validator->messages()->toArray());
     }
 
@@ -257,8 +256,7 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             'graduation_date' => [
                 "The graduation date must be a Jalali date after $now ($faNow).",
                 "The graduation date must be a Jalali date before $now ($faNow).",
-            ]
+            ],
         ], $validator->messages()->toArray());
     }
-
 }

@@ -50,7 +50,7 @@ class JalaliValidator
         return true;
     }
 
-    public function compare($attribute, $value, $parameters)
+    protected function compare($value, $parameters)
     {
         if (!is_string($value)) {
             return false;
@@ -71,14 +71,14 @@ class JalaliValidator
 
     public function validateAfter($attribute, $value, $parameters)
     {
-        $diff = $this->compare($attribute, $value, $parameters);
+        $diff = $this->compare($value, $parameters);
 
         return $diff !== false && $diff > 0;
     }
 
     public function validateBefore($attribute, $value, $parameters)
     {
-        $diff = $this->compare($attribute, $value, $parameters);
+        $diff = $this->compare($value, $parameters);
 
         return $diff !== false && $diff < 0;
     }

@@ -2,7 +2,6 @@
 
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
-use Mockery\MockInterface;
 use Halaei\Jalali\Laravel\JalaliValidator;
 use Opilo\Farsi\JalaliDate;
 use Opilo\Farsi\StringCleaner;
@@ -15,14 +14,15 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
     private $factory;
 
     /**
-     * @var Translator|MockInterface
+     * @var Translator
      */
     private $translator;
 
     public function setUp()
     {
         parent::setUp();
-        $this->translator = Mockery::mock(Translator::class);
+        $this->translator = new Translator(new \Illuminate\Translation\FileLoader(new \Illuminate\Filesystem\Filesystem(), __DIR__ . '/../sample-lang'), 'en');
+        $this->translator->setLocale('en');
         $this->factory = new Factory($this->translator);
 
         $validator = new JalaliValidator();
@@ -52,12 +52,6 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
         });
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
-
     public function test_validation_rules_pass()
     {
         $validator = $this->factory->make(
@@ -75,7 +69,7 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($validator->passes());
     }
 
-    public function test_validating_Jalali_fails()
+    public function test_validating_Jalali_fails_with_english_locale()
     {
         JalaliValidator::setSampleDate(new JalaliDate(1395, 1, 1));
 
@@ -90,62 +84,43 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             ]
         );
 
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.birth_date.jalali')
-            ->andReturn('birth_date must be jalali of format :format');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.attributes.birth_date')
-            ->andReturn('validation.attributes.birth_date');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali')
-            ->andReturn('validation.custom.graduation_date.jalali');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali')
-            ->andReturn(':attribute should be a valid jalali according to :format (e.g. :sample or :fa-sample)');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.attributes.graduation_date')
-            ->andReturn('the graduation date');
-
-        $this->assertTrue($validator->fails());
-
         $this->assertEquals([
             'birth_date' => [
-                'birth_date must be jalali of format Y/m/d',
+                'Please provide a valid birth date according to the Jalali Calendar.',
             ],
             'graduation_date' => [
-                'the graduation date should be a valid jalali according to Y-m-d (e.g. 1395-1-1 or ۱۳۹۵-۱-۱)',
+                'The graduation date does not match Jalali Date format Y-m-d. A sample valid Jalali Date would be "1395-1-1".',
             ],
         ], $validator->messages()->toArray());
 
         JalaliValidator::setSampleDate();
     }
 
-    public function test_sample_dates_are_replaced()
+    public function test_validating_Jalali_fails_with_farsi_locale()
     {
+        $this->translator->setLocale('fa');
+
         JalaliValidator::setSampleDate(new JalaliDate(1395, 2, 13));
 
         $validator = $this->factory->make(
             [
-                'graduation_date' => 'garbage',
+                'graduation_date' => 'foo',
+                'birth_date'      => 'bar',
             ],
             [
-                'graduation_date' => 'required|jalali:Y-y-d-j-S-z-m-M-n\\Y',
+                'graduation_date' => 'required|jalali:y/M/d',
+                'birth_date'      => 'required|jalali',
             ]
         );
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali')
-            ->andReturn('validation.custom.graduation_date.jalali');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali')
-            ->andReturn(':sample :fa-sample');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.attributes.graduation_date')
-            ->andReturn('validation.attributes.graduation_date');
 
         $this->assertTrue($validator->fails());
 
         $this->assertEquals([
             'graduation_date' => [
-                '1395-95-13-13-S-44-2-اردیبهشت-2Y ۱۳۹۵-۹۵-۱۳-۱۳-S-۴۴-۲-اردیبهشت-۲Y',
+                'graduation date وارد شده تاریخ شمسی معتبری طبق فرمت y/M/d نیست (مثال معتبر: ۹۵/اردیبهشت/۱۳).',
+            ],
+            'birth_date' => [
+                'تاریخ تولد وارد شده تاریخ شمسی معتبری طبق فرمت Y/m/d نیست (مثال معتبر: ۱۳۹۵/۲/۱۳).',
             ],
         ], $validator->messages()->toArray());
 
@@ -155,7 +130,6 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
     public function test_jalali_after_or_before_replacer_is_applied_with_no_parameter()
     {
         $now = JalaliDate::fromDateTime(new DateTime())->format('Y/m/d', false);
-        $faNow = StringCleaner::digitsToFarsi($now);
         $validator = $this->factory->make(
             [
                 'graduation_date' => 'garbage',
@@ -165,61 +139,36 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             ]
         );
 
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali_after')
-            ->andReturn('validation.custom.graduation_date.jalali_after');
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali_before')
-            ->andReturn('validation.custom.graduation_date.jalali_before');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali_after')
-            ->andReturn('The :attribute must be a Jalali date after :date (:fa-date).');
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali_before')
-            ->andReturn('The :attribute must be a Jalali date before :date (:fa-date).');
-
-        $this->translator->shouldReceive('trans')->twice()->with('validation.attributes.graduation_date')
-            ->andReturn('validation.attributes.graduation_date');
-
         $this->assertTrue($validator->fails());
 
         $this->assertEquals([
             'graduation_date' => [
-                "The graduation date must be a Jalali date after $now ($faNow).",
-                "The graduation date must be a Jalali date before $now ($faNow).",
+                "The graduation date must be a Jalali date after $now.",
+                "The graduation date must be a Jalali date before $now.",
             ],
         ], $validator->messages()->toArray());
     }
 
     public function test_jalali_after_or_before_replacer_is_applied_with_date()
     {
-        $now = '1394/9/14';
-        $faNow = StringCleaner::digitsToFarsi($now);
+        $this->translator->setLocale('fa');
+
+        $faNow = '۱۳۹۴/۹/۱۴';
         $validator = $this->factory->make(
             [
-                'graduation_date' => 'garbage',
+                'birth_date' => 'garbage',
             ],
             [
-                'graduation_date' => "required|jalali_after:$now|jalali_before:$now",
+                'birth_date' => "required|jalali_after:$faNow|jalali_before:$faNow",
             ]
         );
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali_after')
-            ->andReturn('validation.custom.graduation_date.jalali_after');
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali_before')
-            ->andReturn('validation.custom.graduation_date.jalali_before');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali_after')
-            ->andReturn('The :attribute must be a Jalali date after :date (:fa-date).');
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali_before')
-            ->andReturn('The :attribute must be a Jalali date before :date (:fa-date).');
-
-        $this->translator->shouldReceive('trans')->twice()->with('validation.attributes.graduation_date')
-            ->andReturn('validation.attributes.graduation_date');
 
         $this->assertTrue($validator->fails());
 
         $this->assertEquals([
-            'graduation_date' => [
-                "The graduation date must be a Jalali date after $now ($faNow).",
-                "The graduation date must be a Jalali date before $now ($faNow).",
+            'birth_date' => [
+                "تاریخ تولد وارد شده باید یک تاریخ شمسی معتبر بعد از $faNow باشد.",
+                "تاریخ تولد وارد شده باید یک تاریخ شمسی معتبر قبل از $faNow باشد.",
             ],
         ], $validator->messages()->toArray());
     }
@@ -237,25 +186,12 @@ class JalaliServiceProviderTest extends PHPUnit_Framework_TestCase
             ]
         );
 
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali_after')
-            ->andReturn('validation.custom.graduation_date.jalali_after');
-        $this->translator->shouldReceive('trans')->once()->with('validation.custom.graduation_date.jalali_before')
-            ->andReturn('validation.custom.graduation_date.jalali_before');
-
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali_after')
-            ->andReturn('The :attribute must be a Jalali date after :date (:fa-date).');
-        $this->translator->shouldReceive('trans')->once()->with('validation.jalali_before')
-            ->andReturn('The :attribute must be a Jalali date before :date (:fa-date).');
-
-        $this->translator->shouldReceive('trans')->twice()->with('validation.attributes.graduation_date')
-            ->andReturn('validation.attributes.graduation_date');
-
         $this->assertTrue($validator->fails());
 
         $this->assertEquals([
             'graduation_date' => [
-                "The graduation date must be a Jalali date after $now ($faNow).",
-                "The graduation date must be a Jalali date before $now ($faNow).",
+                "The graduation date must be a Jalali date after $now.",
+                "The graduation date must be a Jalali date before $now.",
             ],
         ], $validator->messages()->toArray());
     }

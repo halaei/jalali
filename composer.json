@@ -12,12 +12,12 @@
   "require": {
     "php": ">=5.5",
     "illuminate/validation": "^4.2||^5",
-    "opilo/farsi": "^0.1.2"
+    "opilo/farsi": ">=0.1.2 <1.0.0"
   },
   "require-dev": {
     "illuminate/translation": "^4.2||^5",
-    "phpunit/phpunit": "4.*",
-    "mockery/mockery": "~0.9"
+    "illuminate/filesystem": "^4.2||^5",
+    "phpunit/phpunit": "4.*"
   },
   "autoload": {
     "psr-4": {
